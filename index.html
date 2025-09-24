@@ -1003,6 +1003,50 @@
     </style>
 </head>
 <body>
+    <!-- Tablet/iPad Splash Overlay -->
+    <div id="splashOverlay" class="splash-overlay" hidden>
+        <div class="splash-content" role="dialog" aria-modal="true" aria-labelledby="splashTitle">
+            <div class="splash-welcome">
+                <h2>ברוכים הבאים ליישומון “אותיות נעות מונטסורי” ✨</h2>
+                <p>מטרת היישומון: לתמוך בלמידת קריאה וכתיבה באמצעות הזזת והרכבת אותיות בסביבת עבודה מובנית.</p>
+                <p>היישומון מבוסס על עקרונות הגישה המונטסורית, המעודדים חקר עצמאי והתנסות חווייתית.</p>
+            </div>
+            <h1 id="splashTitle">אותיות נעות מונטסורי — גרסת טאבלט/אייפד</h1>
+            <p class="splash-lead">
+                היישומון מותאם במיוחד לטאבלט/אייפד. אינו מותאם לטלפון נייד מפאת חוסר מקום ולנראות מיטבית לתלמידים.
+            </p>
+            <div class="splash-actions">
+                <button id="splashStartBtn" class="splash-btn primary">הבנתי, בואו נתחיל! 🚀</button>
+                <button id="splashInstructionsBtn" class="splash-btn">להוראות המלאות 📖</button>
+            </div>
+            <label class="splash-checkbox">
+                <input type="checkbox" id="splashDontShow">
+                <span>אל תציג הודעה זאת שוב</span>
+            </label>
+            <div class="splash-copyright">© אושרת רון</div>
+        </div>
+        <style>
+            .splash-overlay { display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+            .splash-overlay[hidden] { display: none !important; }
+            .splash-content { direction: rtl; text-align: right; width: min(720px, 92vw); margin: 16px; background: #ffffff; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.35); padding: 28px; font-family: 'Rubik', 'Noto Sans Hebrew', sans-serif; animation: splashIn .25s ease-out; }
+            .splash-content h1 { margin: 0 0 10px; font-size: 26px; font-weight: 700; color: #1976d2; }
+            .splash-welcome { margin-bottom: 12px; background: #f8f9ff; border-right: 4px solid #42a5f5; border-radius: 12px; padding: 12px 16px; }
+            .splash-welcome h2 { margin: 0 0 8px; font-size: 22px; color: #0d47a1; font-weight: 700; }
+            .splash-welcome p { margin: 0 0 6px; font-size: 15px; color: #333; line-height: 1.6; }
+            .splash-lead { margin: 0 0 18px; font-size: 16px; line-height: 1.6; color: #333; }
+            .splash-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 6px; }
+            .splash-btn { border: 2px solid #e0e0e0; background: linear-gradient(135deg,#ffffff 0%,#f5f9ff 100%); color:#333; border-radius: 24px; padding: 10px 18px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all .2s ease; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+            .splash-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+            .splash-btn.primary { border-color: transparent; background: linear-gradient(135deg,#1976d2,#42a5f5); color: #fff; box-shadow: 0 4px 12px rgba(25,118,210,.35); }
+            .splash-checkbox { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; color:#555; font-size: 14px; user-select: none; }
+            .splash-checkbox input { transform: scale(1.1); }
+            .splash-copyright { margin-top: 10px; font-size: 13px; color:#777; text-align: center; }
+            @keyframes splashIn { from{ transform: translateY(-20px); opacity: 0 } to{ transform: translateY(0); opacity: 1 } }
+            /* Styling for injected tablet note inside instructions modal */
+            .instructions-modal .tablet-note { background: #e3f2fd; border-right: 4px solid #1976d2; border-radius: 12px; padding: 14px 16px; margin: 0 0 16px; font-family: 'Rubik', 'Noto Sans Hebrew', sans-serif; }
+            .instructions-modal .tablet-note strong { color:#0d47a1; }
+        </style>
+    </div>
     <div class="app">
         <div class="toolbar">
             <input type="text" id="teacherWord" placeholder="כתוב מילה להעתקה..." />
@@ -2339,6 +2383,71 @@
             }
             window.addEventListener('beforeprint', createPrintClones);
             window.addEventListener('afterprint', removePrintClones);
+        })();
+    </script>
+    <!-- Splash + Instructions integration script (tablet/iPad notice) -->
+    <script>
+        (function(){
+            const LS_KEY = 'tabletSplashDontShow';
+            const overlay = document.getElementById('splashOverlay');
+            const startBtn = document.getElementById('splashStartBtn');
+            const fullBtn = document.getElementById('splashInstructionsBtn');
+            const dontShow = document.getElementById('splashDontShow');
+
+            function openOverlay(){
+                if (!overlay) return;
+                overlay.removeAttribute('hidden');
+            }
+            function closeOverlay(){
+                if (!overlay) return;
+                if (dontShow && dontShow.checked) {
+                    try { localStorage.setItem(LS_KEY, '1'); } catch(e){}
+                }
+                overlay.setAttribute('hidden','');
+            }
+            function goToInstructions(){
+                try {
+                    const btn = document.getElementById('instructionsBtn');
+                    if (btn) btn.click();
+                } catch(e){}
+            }
+
+            document.addEventListener('DOMContentLoaded', function(){
+                let skip = false;
+                try { skip = localStorage.getItem(LS_KEY) === '1'; } catch(e){}
+                if (!skip) openOverlay();
+                if (startBtn) startBtn.addEventListener('click', closeOverlay);
+                if (fullBtn) fullBtn.addEventListener('click', function(){
+                    closeOverlay();
+                    goToInstructions();
+                });
+                if (overlay) overlay.addEventListener('click', function(ev){
+                    if (ev.target === overlay) closeOverlay();
+                });
+            });
+
+            // Always inject a tablet/iPad notice at the top of the instructions modal when it appears.
+            const injectTabletNote = (modal) => {
+                try {
+                    if (!modal || modal.querySelector('.tablet-note')) return;
+                    const body = modal.querySelector('.instructions-body');
+                    if (!body) return;
+                    const note = document.createElement('div');
+                    note.className = 'tablet-note';
+                    note.innerHTML = '<strong>חשוב:</strong> היישומון מותאם במיוחד לטאבלט/אייפד. אינו מותאם לטלפון נייד מפאת חוסר מקום ולנראות מיטבית לתלמידים.';
+                    body.insertBefore(note, body.firstChild);
+                } catch(e){}
+            };
+            const mo = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    for (const node of m.addedNodes) {
+                        if (node && node.nodeType === 1 && node.classList && node.classList.contains('instructions-modal')) {
+                            injectTabletNote(node);
+                        }
+                    }
+                }
+            });
+            try { mo.observe(document.body, { childList: true }); } catch(e){}
         })();
     </script>
 </body>
