@@ -2393,6 +2393,10 @@
             const startBtn = document.getElementById('splashStartBtn');
             const fullBtn = document.getElementById('splashInstructionsBtn');
             const dontShow = document.getElementById('splashDontShow');
+            // URL flags for testing/control on GitHub Pages
+            const params = new URLSearchParams(window.location.search);
+            const forceSplash = params.has('forceSplash') || ['1','true','yes'].includes((params.get('forceSplash')||'').toLowerCase());
+            const resetSplash = params.has('resetSplash') || params.has('clearSplash') || ['1','true','yes'].includes((params.get('resetSplash')||'').toLowerCase());
 
             function openOverlay(){
                 if (!overlay) return;
@@ -2413,9 +2417,17 @@
             }
 
             document.addEventListener('DOMContentLoaded', function(){
+                // Ensure checkbox default is unchecked (avoid browser autofill restoring state)
+                if (dontShow) try { dontShow.checked = false; } catch(e){}
+                // Optional: reset via URL
+                if (resetSplash) { try { localStorage.removeItem(LS_KEY); } catch(e){} }
                 let skip = false;
                 try { skip = localStorage.getItem(LS_KEY) === '1'; } catch(e){}
-                if (!skip) openOverlay();
+                if (forceSplash) {
+                    openOverlay();
+                } else if (!skip) {
+                    openOverlay();
+                }
                 if (startBtn) startBtn.addEventListener('click', closeOverlay);
                 if (fullBtn) fullBtn.addEventListener('click', function(){
                     closeOverlay();
