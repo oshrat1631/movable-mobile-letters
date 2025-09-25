@@ -2388,7 +2388,7 @@
     <!-- Splash + Instructions integration script (tablet/iPad notice) -->
     <script>
         (function(){
-            const LS_KEY = 'tabletSplashDontShow';
+            const LS_KEY = 'tabletSplashDontShow_v2';
             const overlay = document.getElementById('splashOverlay');
             const startBtn = document.getElementById('splashStartBtn');
             const fullBtn = document.getElementById('splashInstructionsBtn');
@@ -2416,11 +2416,13 @@
                 } catch(e){}
             }
 
-            document.addEventListener('DOMContentLoaded', function(){
-                // Ensure checkbox default is unchecked (avoid browser autofill restoring state)
-                if (dontShow) try { dontShow.checked = false; } catch(e){}
-                // Optional: reset via URL
-                if (resetSplash) { try { localStorage.removeItem(LS_KEY); } catch(e){} }
+            function initSplash(){
+                try {
+                    // Ensure checkbox default is unchecked (avoid browser autofill restoring state)
+                    if (dontShow) dontShow.checked = false;
+                    // Optional: reset via URL
+                    if (resetSplash) localStorage.removeItem(LS_KEY);
+                } catch(e){}
                 let skip = false;
                 try { skip = localStorage.getItem(LS_KEY) === '1'; } catch(e){}
                 if (forceSplash) {
@@ -2436,7 +2438,12 @@
                 if (overlay) overlay.addEventListener('click', function(ev){
                     if (ev.target === overlay) closeOverlay();
                 });
-            });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSplash);
+            } else {
+                initSplash();
+            }
 
             // Always inject a tablet/iPad notice at the top of the instructions modal when it appears.
             const injectTabletNote = (modal) => {
